@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class Genre {
 
+
     @SerializedName("id")
     @Expose
     private int id;

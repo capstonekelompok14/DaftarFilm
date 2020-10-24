@@ -5,7 +5,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Toast;
-
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
