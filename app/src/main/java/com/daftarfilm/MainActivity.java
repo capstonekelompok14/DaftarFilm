@@ -1,17 +1,26 @@
 package com.daftarfilm;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Toast;
 import java.util.List;
+import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView moviesList;
     private MoviesAdapter adapter;
     private MoviesRepository moviesRepository;
+
+    private List<Genre> movieGenres;
+
+    private boolean isFetchingMovies;
+    private int currentPage = 1;
+
 
 
     @Override
@@ -22,17 +31,38 @@ public class MainActivity extends AppCompatActivity {
         moviesRepository = MoviesRepository.getInstance();
 
         moviesList = findViewById(R.id.movies_list);
-        moviesList.setLayoutManager(new LinearLayoutManager(this));
 
+        setupOnScrollListener();
 
         getGenres();
     }
+
+    private void setupOnScrollListener() {
+        final LinearLayoutManager manager = new LinearLayoutManager(this);
+        moviesList.setLayoutManager(manager);
+        moviesList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                int totalItemCount = manager.getItemCount();
+                int visibleItemCount = manager.getChildCount();
+                int firstVisibleItem = manager.findFirstVisibleItemPosition();
+
+                if (firstVisibleItem + visibleItemCount >= totalItemCount / 2) {
+                    if (!isFetchingMovies) {
+                        getMovies(currentPage + 1);
+                    }
+                }
+            }
+        });
+    }
+
 
     private void getGenres() {
         moviesRepository.getGenres(new OnGetGenresCallback() {
             @Override
             public void onSuccess(List<Genre> genres) {
-                getMovies(genres);
+                movieGenres = genres;
+                getMovies(currentPage);
             }
 
             @Override
@@ -42,14 +72,21 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getMovies(final List<Genre> genres) {
-        moviesRepository.getMovies(new OnGetMoviesCallback() {
+    private void getMovies(int page) {
+        isFetchingMovies = true;
+        moviesRepository.getMovies(page, new OnGetMoviesCallback() {
             @Override
-            public void onSuccess(List<Movie> movies) {
-                adapter = new MoviesAdapter(movies, genres);
-                moviesList.setAdapter(adapter);
+            public void onSuccess(int page, List<Movie> movies) {
+                Log.d("MoviesRepository", "Current Page = " + page);
+                if (adapter == null) {
+                    adapter = new MoviesAdapter(movies, movieGenres);
+                    moviesList.setAdapter(adapter);
+                } else {
+                    adapter.appendMovies(movies);
+                }
+                currentPage = page;
+                isFetchingMovies = false;
             }
-
             @Override
             public void onError() {
                 showError();
