@@ -4,6 +4,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.text.TextUtils;
+
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHolder> {
-    private String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w500";
 
     private List<Genre> allGenres;
     private List<Movie> movies;
@@ -24,6 +26,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
         this.allGenres = allGenres;
     }
 
+
+
+    @NonNull
     @Override
     public MovieViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_movie, parent, false);
@@ -45,6 +50,11 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
         movies.addAll(moviesToAppend);
         notifyDataSetChanged();
     }
+    public void clearMovies() {
+        movies.clear();
+        notifyDataSetChanged();
+    }
+
 
 
     class MovieViewHolder extends RecyclerView.ViewHolder {
@@ -68,8 +78,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
             title.setText(movie.getTitle());
             rating.setText(String.valueOf(movie.getRating()));
             genres.setText(getGenres(movie.getGenreIds()));
+
             Glide.with(itemView)
-                    .load(IMAGE_BASE_URL + movie.getPosterPath())
+                    .load(BuildConfig.IMAGE_BASE_URL + movie.getPosterPath())
                     .apply(RequestOptions.placeholderOf(R.color.colorPrimary))
                     .into(poster);
         }
