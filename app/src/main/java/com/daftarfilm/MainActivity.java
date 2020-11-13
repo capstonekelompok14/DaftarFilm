@@ -1,16 +1,18 @@
 package com.daftarfilm;
 
 import android.os.Bundle;
-
+import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Toast;
 import java.util.List;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.widget.PopupMenu;
 
 public class MainActivity extends AppCompatActivity {
@@ -31,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         moviesRepository = MoviesRepository.getInstance();
 
@@ -131,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(int page, List<Movie> movies) {
 
                 if (adapter == null) {
-                    adapter = new MoviesAdapter(movies, movieGenres);
+                    adapter = new MoviesAdapter(movies, movieGenres, callback);
                     moviesList.setAdapter(adapter);
                 } else {
                     if (page == 1) {
@@ -141,12 +146,37 @@ public class MainActivity extends AppCompatActivity {
                 }
                 currentPage = page;
                 isFetchingMovies = false;
+
+                setTitle();
             }
             @Override
             public void onError() {
                 showError();
             }
         });
+    }
+
+    OnMoviesClickCallback callback = new OnMoviesClickCallback() {
+        @Override
+        public void onClick(Movie movie) {
+            Intent intent = new Intent(MainActivity.this, MovieActivity.class);
+            intent.putExtra(MovieActivity.MOVIE_ID, movie.getId());
+            startActivity(intent);
+        }
+    };
+
+    private void setTitle() {
+        switch (sortBy) {
+            case MoviesRepository.POPULAR:
+                setTitle(getString(R.string.popular));
+                break;
+            case MoviesRepository.TOP_RATED:
+                setTitle(getString(R.string.top_rated));
+                break;
+            case MoviesRepository.UPCOMING:
+                setTitle(getString(R.string.upcoming));
+                break;
+        }
     }
 
     private void showError() {
